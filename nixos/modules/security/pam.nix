@@ -956,6 +956,7 @@ in
 
   imports = [
     (mkRenamedOptionModule [ "security" "pam" "enableU2F" ] [ "security" "pam" "u2f" "enable" ])
+    (mkRenamedOptionModule [ "security" "pam" "enableSSHAgentAuth" ] [ "security" "pam" "sshAgentAuth" "enable" ])
   ];
 
   ###### interface
@@ -1025,16 +1026,11 @@ in
       '';
     };
 
-    security.pam.enableSSHAgentAuth = mkOption {
-      type = types.bool;
-      default = false;
-      description =
-        lib.mdDoc ''
-          Enable sudo logins if the user's SSH agent provides a key
-          present in {file}`~/.ssh/authorized_keys`.
-          This allows machines to exclusively use SSH keys instead of
-          passwords.
-        '';
+    security.pam.sshAgentAuth = {
+      enable = mkEnableOption ''
+        authenticating using a signature performed by the ssh-agent.
+        This allows using SSH keys exclusively, instead of passwords, for instance on remote machines
+      '';
     };
 
     security.pam.enableOTPW = mkEnableOption (lib.mdDoc "the OTPW (one-time password) PAM module");
