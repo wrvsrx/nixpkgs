@@ -3,6 +3,7 @@
   knewstuff,
   kdeclarative,
   ksvg,
+  qtsvg,
   plasma-workspace,
 }:
 mkKdeDerivation {
@@ -11,6 +12,7 @@ mkKdeDerivation {
     knewstuff
     kdeclarative
     ksvg
+    qtsvg
     plasma-workspace
   ];
 }
