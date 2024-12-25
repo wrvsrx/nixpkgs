@@ -307,6 +307,7 @@ let
       postInstall =
         ''
           moveToOutput "bin/ecpg" "$dev"
+          # The following seems to fail without this comment (?)
           moveToOutput "lib/pgxs" "$dev"
 
           # Pretend pg_config is located in $out/bin to return correct paths, but
