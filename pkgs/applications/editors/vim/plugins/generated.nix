@@ -2833,12 +2833,12 @@ final: prev: {
 
   coc-nvim = buildVimPlugin {
     pname = "coc.nvim";
-    version = "2025-04-15";
+    version = "2025-04-26";
     src = fetchFromGitHub {
       owner = "neoclide";
       repo = "coc.nvim";
-      rev = "993a4a273bf0415296a1a8d512466b183670568a";
-      sha256 = "0nrsxl9faaq5rlvfsbwqpil7gczf2lz65jil4nj8kwmfi113rw37";
+      rev = "3c8d5fa4fd8f4360aa6af949775fc9a26880e2b3";
+      sha256 = "sha256-soR+9cH//BMNCerWGIBjA11cud0Mrb4eBmZCgMSEJqA=";
     };
     meta.homepage = "https://github.com/neoclide/coc.nvim/";
     meta.hydraPlatforms = [ ];
