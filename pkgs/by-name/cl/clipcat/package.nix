@@ -20,6 +20,8 @@ rustPlatform.buildRustPackage rec {
 
   cargoHash = "sha256-UA+NTtZ2qffUPUmvCidnTHwFzD3WOPTlxHR2e2vKwPQ=";
 
+  patches = [ ./dummy.patch ];
+
   nativeBuildInputs = [
     protobuf
     installShellFiles
