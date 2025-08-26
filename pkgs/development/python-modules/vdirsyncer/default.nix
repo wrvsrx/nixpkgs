@@ -2,6 +2,7 @@
   lib,
   buildPythonPackage,
   fetchPypi,
+  fetchpatch,
   pythonOlder,
   click,
   click-log,
@@ -37,6 +38,14 @@ buildPythonPackage rec {
     inherit pname version;
     hash = "sha256-5DeFH+uYXew1RGVPj5z23RCbCwP34ZlWCGYDCS/+so8=";
   };
+
+  patches = [
+    (fetchpatch {
+      # fix event_loop missing
+      url = "https://github.com/pimutils/vdirsyncer/commit/164559ad7a95ed795ce4ae8d9b287bd27704742d.patch";
+      hash = "sha256-nUGvkBnHr8nVPpBuhQ5GjaRs3QSxokdZUEIsOrQ+lpo=";
+    })
+  ];
 
   nativeBuildInputs = [
     setuptools
