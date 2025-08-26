@@ -9,6 +9,7 @@
   pillow,
   fonttools,
 
+  pikepdf,
   pytestCheckHook,
   pytest-cov-stub,
   qrcode,
@@ -44,6 +45,7 @@ buildPythonPackage rec {
     camelot
     uharfbuzz
     lxml
+    pikepdf
   ];
 
   disabledTestPaths = [
