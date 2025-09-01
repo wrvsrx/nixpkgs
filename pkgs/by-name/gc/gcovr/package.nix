@@ -21,7 +21,9 @@ python3Packages.buildPythonPackage rec {
   # pythonRelaxDeps do not work on pyproject.toml
   preBuild = ''
     substituteInPlace pyproject.toml \
-      --replace-fail "hatchling==1.26.1" "hatchling"
+      --replace-fail "hatchling==1.26.1"                "hatchling" \
+      --replace-fail "hatch-vcs==0.4.0"                 "hatch-vcs" \
+      --replace-fail "hatch-fancy-pypi-readme==24.1.0"  "hatch-fancy-pypi-readme"
   '';
 
   dependencies =
