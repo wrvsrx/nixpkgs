@@ -28,6 +28,9 @@
   wayland,
   wayland-protocols,
   wayland-scanner,
+  withIMDKit ? true,
+  withWayland ? true,
+  withX11 ? true,
 }:
 
 stdenv.mkDerivation rec {
@@ -60,8 +63,6 @@ stdenv.mkDerivation rec {
     flex
     bison
     pandoc
-    wayland-protocols
-    wayland-scanner
   ];
   buildInputs = [
     libxkbcommon
@@ -79,10 +80,20 @@ stdenv.mkDerivation rec {
     xcbutilwm
     xcbutilxrm
     which
+  ]
+  ++ lib.optionals withIMDKit [
+    xcb-imdkit
+  ]
+  ++ lib.optionals withWayland [
     wayland
+    wayland-protocols
+    wayland-scanner
   ];
 
-  mesonFlags = [ "-Dimdkit=true" ];
+  mesonFlags =
+    lib.optionals withIMDKit [ "-Dimdkit=true" ]
+    ++ lib.optionals (!withWayland) [ "-Dwayland=disabled" ]
+    ++ lib.optionals (!withX11) [ "-Dxcb=disabled" ];
 
   doCheck = false;
 
