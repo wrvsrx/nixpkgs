@@ -1,36 +1,36 @@
 {
-  stdenv,
-  lib,
+  bison,
+  buildPackages,
+  cairo,
+  check,
   fetchFromGitHub,
+  flex,
+  git,
+  glib,
+  lib,
+  librsvg,
+  libstartup_notification,
+  libxcb,
+  libxkbcommon,
   meson,
   ninja,
-  pkg-config,
-  libxkbcommon,
-  pango,
-  which,
-  git,
-  cairo,
-  libxcb,
-  xcb-imdkit,
-  xcb-util-cursor,
-  xcbutilkeysyms,
-  xcbutil,
-  xcbutilwm,
-  xcbutilxrm,
-  libstartup_notification,
-  bison,
-  flex,
-  librsvg,
-  check,
-  glib,
-  buildPackages,
   pandoc,
+  pango,
+  pkg-config,
+  stdenv,
   wayland,
   wayland-protocols,
   wayland-scanner,
+  which,
   withIMDKit ? true,
   withWayland ? true,
   withX11 ? true,
+  xcb-imdkit,
+  xcbutil,
+  xcb-util-cursor,
+  xcbutilkeysyms,
+  xcbutilwm,
+  xcbutilxrm,
 }:
 
 stdenv.mkDerivation rec {
@@ -53,33 +53,32 @@ stdenv.mkDerivation rec {
 
   depsBuildBuild = [
     buildPackages.stdenv.cc
-    pkg-config
     glib
+    pkg-config
   ];
   nativeBuildInputs = [
+    bison
+    flex
     meson
     ninja
-    pkg-config
-    flex
-    bison
     pandoc
+    pkg-config
   ];
   buildInputs = [
-    libxkbcommon
-    pango
     cairo
+    check
     git
     librsvg
-    check
     libstartup_notification
     libxcb
-    xcb-imdkit
+    libxkbcommon
+    pango
+    which
+    xcbutil
     xcb-util-cursor
     xcbutilkeysyms
-    xcbutil
     xcbutilwm
     xcbutilxrm
-    which
   ]
   ++ lib.optionals withIMDKit [
     xcb-imdkit
