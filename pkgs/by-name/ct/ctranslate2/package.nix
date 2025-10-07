@@ -56,6 +56,9 @@ stdenv'.mkDerivation (finalAttrs: {
     (lib.cmakeBool "WITH_OPENBLAS" withOpenblas)
     (lib.cmakeBool "WITH_RUY" withRuy)
     (lib.cmakeBool "WITH_MKL" withMkl)
+
+    # Fix CMake 4 compatibility
+    (lib.cmakeFeature "CMAKE_POLICY_VERSION_MINIMUM" "3.5")
   ]
   ++ lib.optionals stdenv.hostPlatform.isDarwin [
     (lib.cmakeBool "WITH_ACCELERATE" true)
