@@ -67,6 +67,7 @@ stdenv.mkDerivation (finalAttrs: {
       "-DENABLE_DAEMON=${mkFlag enableDaemon}"
       "-DENABLE_CLI=${mkFlag enableCli}"
       "-DINSTALL_LIB=${mkFlag installLib}"
+      "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
     ];
 
   nativeBuildInputs = [
