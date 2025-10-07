@@ -19,6 +19,8 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [ cmake ];
 
+  cmakeFlags = [ "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" ];
+
   meta = with lib; {
     description = "uTorrent Transport Protocol library";
     homepage = "https://github.com/transmission/libutp";
