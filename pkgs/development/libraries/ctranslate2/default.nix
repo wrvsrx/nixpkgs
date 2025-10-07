@@ -56,6 +56,7 @@ stdenv'.mkDerivation rec {
     "-DWITH_OPENBLAS=${cmakeBool withOpenblas}"
     "-DWITH_RUY=${cmakeBool withRuy}"
     "-DWITH_MKL=${cmakeBool withMkl}"
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5"
   ]
   ++ lib.optional stdenv.hostPlatform.isDarwin "-DWITH_ACCELERATE=ON";
 
