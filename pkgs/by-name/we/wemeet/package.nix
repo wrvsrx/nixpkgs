@@ -133,16 +133,16 @@ let
 in
 stdenv.mkDerivation {
   pname = "wemeet";
-  version = "3.19.2.400";
+  version = "3.26.10.400";
 
   src = selectSystem {
     x86_64-linux = fetchurl {
-      url = "https://updatecdn.meeting.qq.com/cos/fb7464ffb18b94a06868265bed984007/TencentMeeting_0300000000_3.19.2.400_x86_64_default.publish.officialwebsite.deb";
-      hash = "sha256-PSGc4urZnoBxtk1cwwz/oeXMwnI02Mv1pN2e9eEf5kE=";
+      url = "https://updatecdn.meeting.qq.com/cos/9cfd93b10ee81b2fc3ad26357f27ed13/TencentMeeting_0300000000_3.26.10.400_x86_64_default.publish.officialwebsite.deb";
+      hash = "sha256-7gN40mkAD/0/k0E+bBNfiMcY+YtIaLWycFoI+hhrjgc=";
     };
     aarch64-linux = fetchurl {
-      url = "https://updatecdn.meeting.qq.com/cos/867a8a2e99a215dcd4f60fe049dbe6cf/TencentMeeting_0300000000_3.19.2.400_arm64_default.publish.officialwebsite.deb";
-      hash = "sha256-avN+PHKKC58lMC5wd0yVLD0Ct7sbb4BtXjovish0ULU=";
+      url = "https://updatecdn.meeting.qq.com/cos/e5f447f30343e27c49438db8d035ae23/TencentMeeting_0300000000_3.26.10.400_arm64_default.publish.officialwebsite.deb";
+      hash = "sha256-ShxcDwwBThwe2YKNy/5+HmYcnnodPhrMaOwkw3gTq0E=";
     };
   };
 
@@ -204,6 +204,11 @@ stdenv.mkDerivation {
     ln -s $out/app/wemeet/translations $out/app/wemeet/lib/translations
 
     runHook postInstall
+  '';
+
+  postInstall = ''
+    # cmp rdi, 0 -> cmp r12, 0, at co_jump_to_link to address coroutine context resume issue
+    echo -ne '\x49\x83\xfc\x00' | dd of=$out/app/wemeet/lib/libwemeet_base.so bs=1 seek=$((0x94c833)) conv=notrunc
   '';
 
   # set LP_NUM_THREADS limit the number of cores used by rendering
