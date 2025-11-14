@@ -8093,6 +8093,8 @@ self: super: with self; {
 
   langchain-text-splitters = callPackage ../development/python-modules/langchain-text-splitters { };
 
+  langchain-text-splitters_0 = callPackage ../development/python-modules/langchain-text-splitters_0 { };
+
   langchain-xai = callPackage ../development/python-modules/langchain-xai { };
 
   langcodes = callPackage ../development/python-modules/langcodes { };
