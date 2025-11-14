@@ -127,7 +127,7 @@ python3Packages.buildPythonApplication rec {
       httpx
       iso-639
       itsdangerous
-      langchain
+      langchain_0
       langchain-community
       langdetect
       ldap3
