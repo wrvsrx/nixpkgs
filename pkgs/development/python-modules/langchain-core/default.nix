@@ -5,7 +5,7 @@
   fetchFromGitHub,
 
   # build-system
-  hatchling,
+  pdm-backend,
 
   # dependencies
   jsonpatch,
@@ -36,19 +36,19 @@
 
 buildPythonPackage rec {
   pname = "langchain-core";
-  version = "1.0.0";
+  version = "0.3.72";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "langchain-ai";
     repo = "langchain";
     tag = "langchain-core==${version}";
-    hash = "sha256-/V2xwpVIR7AWkN85D51LYokMrTrnJlIkGr0q1ztVh8A=";
+    hash = "sha256-Q2uGMiODUtwkPdOyuSqp8vqjlLjiXk75QjXp7rr20tc=";
   };
 
   sourceRoot = "${src.name}/libs/core";
 
-  build-system = [ hatchling ];
+  build-system = [ pdm-backend ];
 
   pythonRelaxDeps = [
     "packaging"
@@ -90,8 +90,7 @@ buildPythonPackage rec {
     tests.pytest = langchain-core.overridePythonAttrs (_: {
       doCheck = true;
     });
-    # python updater script sets the wrong tag
-    skipBulkUpdate = true;
+
     updateScript = gitUpdater {
       rev-prefix = "langchain-core==";
     };
