@@ -8085,6 +8085,8 @@ self: super: with self; {
 
   langchain-tests = callPackage ../development/python-modules/langchain-tests { };
 
+  langchain-tests_0 = callPackage ../development/python-modules/langchain-tests_0 { };
+
   langchain-text-splitters = callPackage ../development/python-modules/langchain-text-splitters { };
 
   langchain-text-splitters_0 = callPackage ../development/python-modules/langchain-text-splitters_0 { };
