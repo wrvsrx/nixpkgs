@@ -10,8 +10,8 @@
   aiohttp,
   dataclasses-json,
   httpx-sse,
-  langchain,
-  langchain-core,
+  langchain_0,
+  langchain-core_0,
   langsmith,
   numpy,
   pydantic-settings,
@@ -25,7 +25,7 @@
   duckdb,
   duckdb-engine,
   httpx,
-  langchain-tests,
+  langchain-tests_0,
   lark,
   pandas,
   pytest-asyncio,
@@ -74,8 +74,8 @@ buildPythonPackage rec {
     aiohttp
     dataclasses-json
     httpx-sse
-    langchain
-    langchain-core
+    langchain_0
+    langchain-core_0
     langsmith
     numpy
     pydantic-settings
@@ -92,7 +92,7 @@ buildPythonPackage rec {
     duckdb
     duckdb-engine
     httpx
-    langchain-tests
+    langchain-tests_0
     lark
     pandas
     pytest-asyncio
