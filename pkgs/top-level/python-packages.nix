@@ -8051,6 +8051,8 @@ self: super: with self; {
 
   langchain = callPackage ../development/python-modules/langchain { };
 
+  langchain_0 = callPackage ../development/python-modules/langchain_0 { };
+
   langchain-anthropic = callPackage ../development/python-modules/langchain-anthropic { };
 
   langchain-aws = callPackage ../development/python-modules/langchain-aws { };
