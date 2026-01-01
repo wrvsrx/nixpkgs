@@ -1,6 +1,7 @@
 {
   buildNpmPackage,
   fetchFromGitHub,
+  nodejs_22,
   lib,
 }:
 buildNpmPackage (finalAttrs: {
@@ -16,6 +17,8 @@ buildNpmPackage (finalAttrs: {
   npmDepsHash = "sha256-fKFt10eg72C5wBeAQ6SQH6mBF1Lf/EADN/wCrHkDf3U=";
 
   dontNpmBuild = true;
+
+  nodejs = nodejs_22;
 
   # These dirs are not installed automatically.
   # And if they were not in place, the app would try to create them at runtime, which is of course impossible to achieve.
