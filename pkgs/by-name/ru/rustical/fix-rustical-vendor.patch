@@ -1,0 +1,90 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 40d67b5..7f5d589 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1770,8 +1770,8 @@ dependencies = [
+ 
+ [[package]]
+ name = "ical"
+-version = "0.11.0"
+-source = "git+https://github.com/lennart-k/ical-rs?branch=dev#ece5b95ddc20f89d14e162aba3a49038f9989701"
++version = "0.11.0-dev"
++source = "git+https://github.com/wrvsrx/ical-rs?branch=dev#e8ce65494d771bf71c9c56e61fa681e08b4507a0"
+ dependencies = [
+  "chrono",
+  "chrono-tz",
+@@ -2877,7 +2877,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "27c6023962132f4b30eb4c172c91ce92d933da334c59c23cddee82358ddafb0b"
+ dependencies = [
+  "anyhow",
+- "itertools 0.14.0",
++ "itertools 0.10.5",
+  "proc-macro2",
+  "quote",
+  "syn 2.0.114",
+@@ -3343,7 +3343,7 @@ dependencies = [
+  "figment",
+  "headers",
+  "http",
+- "ical 0.11.0 (git+https://github.com/lennart-k/ical-rs?branch=dev)",
++ "ical 0.11.0-dev",
+  "insta",
+  "opentelemetry",
+  "opentelemetry-otlp",
+@@ -3391,7 +3391,7 @@ dependencies = [
+  "futures-util",
+  "headers",
+  "http",
+- "ical 0.11.0 (git+https://github.com/lennart-k/ical-rs?rev=7c2ab1f3)",
++ "ical 0.11.0",
+  "insta",
+  "percent-encoding",
+  "quick-xml",
+@@ -3430,7 +3430,7 @@ dependencies = [
+  "derive_more",
+  "futures-util",
+  "http",
+- "ical 0.11.0 (git+https://github.com/lennart-k/ical-rs?rev=7c2ab1f3)",
++ "ical 0.11.0",
+  "insta",
+  "percent-encoding",
+  "quick-xml",
+@@ -3463,7 +3463,7 @@ dependencies = [
+  "futures-util",
+  "headers",
+  "http",
+- "ical 0.11.0 (git+https://github.com/lennart-k/ical-rs?rev=7c2ab1f3)",
++ "ical 0.11.0",
+  "itertools 0.14.0",
+  "log",
+  "matchit 0.9.1",
+@@ -3547,7 +3547,7 @@ dependencies = [
+  "chrono",
+  "chrono-tz",
+  "derive_more",
+- "ical 0.11.0 (git+https://github.com/lennart-k/ical-rs?rev=7c2ab1f3)",
++ "ical 0.11.0",
+  "regex",
+  "rrule",
+  "rstest",
+@@ -3588,7 +3588,7 @@ dependencies = [
+  "futures-core",
+  "headers",
+  "http",
+- "ical 0.11.0 (git+https://github.com/lennart-k/ical-rs?rev=7c2ab1f3)",
++ "ical 0.11.0",
+  "regex",
+  "rrule",
+  "rstest",
+diff --git a/Cargo.toml b/Cargo.toml
+index 19f0018..3731506 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -200,6 +200,6 @@ axum-extra.workspace = true
+ headers.workspace = true
+ http.workspace = true
+ # TODO: Remove in next major release
+-ical_dev = { package = "ical", git = "https://github.com/lennart-k/ical-rs", branch = "dev", features = [
++ical_dev = { package = "ical", git = "https://github.com/wrvsrx/ical-rs", branch = "dev", features = [
+   "chrono-tz",
+ ] }
