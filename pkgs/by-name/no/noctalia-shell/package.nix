@@ -13,15 +13,14 @@
   cava,
   cliphist,
   ddcutil,
-  matugen,
   wlsunset,
   wl-clipboard,
   imagemagick,
   wget,
   gpu-screen-recorder,
+  python3,
 
   # calendar support
-  python3,
   evolution-data-server,
   libical,
   glib,
@@ -33,27 +32,26 @@
   cavaSupport ? true,
   cliphistSupport ? true,
   ddcutilSupport ? true,
-  matugenSupport ? true,
   wlsunsetSupport ? true,
   wl-clipboardSupport ? true,
   imagemagickSupport ? true,
-  gpuScreenRecorderSupport ? stdenvNoCC.hostPlatform.system == "x86_64-linux",
   calendarSupport ? false,
+  # gpu-screen-recorder support was moved to an optional plugin in v4.0.0
+  gpuScreenRecorderSupport ? false,
 }:
 let
   runtimeDeps = [
     wget
+    (python3.withPackages (pp: ([ ] ++ lib.optional calendarSupport pp.pygobject3)))
   ]
   ++ lib.optional brightnessctlSupport brightnessctl
   ++ lib.optional cavaSupport cava
   ++ lib.optional cliphistSupport cliphist
   ++ lib.optional ddcutilSupport ddcutil
-  ++ lib.optional matugenSupport matugen
   ++ lib.optional wlsunsetSupport wlsunset
   ++ lib.optional wl-clipboardSupport wl-clipboard
   ++ lib.optional imagemagickSupport imagemagick
-  ++ lib.optional gpuScreenRecorderSupport gpu-screen-recorder
-  ++ lib.optional calendarSupport (python3.withPackages (pp: [ pp.pygobject3 ]));
+  ++ lib.optional gpuScreenRecorderSupport gpu-screen-recorder;
 
   giTypelibPath = lib.makeSearchPath "lib/girepository-1.0" [
     evolution-data-server
@@ -66,13 +64,13 @@ let
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "noctalia-shell";
-  version = "4.2.1";
+  version = "4.2.2";
 
   src = fetchFromGitHub {
     owner = "noctalia-dev";
     repo = "noctalia-shell";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-YGJFGymmRKKyx3HpQkgD95iOhNx2lsgBeGRBxVUGhCc=";
+    hash = "sha256-leon0UiEMUISDQSrjN2xLpAV2xjZQhax5IQoTq7wwTU=";
   };
 
   nativeBuildInputs = [
