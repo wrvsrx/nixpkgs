@@ -91,11 +91,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     ln -s ${quickshell}/bin/qs $out/bin/noctalia-shell
 
     cp -R \
-      Assets Bin Commons CREDITS.md Helpers Modules Services Shaders Widgets shell.qml \
+      Assets Commons CREDITS.md Helpers Modules Services Shaders Widgets shell.qml \
       $out/share/noctalia-shell
 
     rm -R $out/share/noctalia-shell/Assets/Screenshots
-    rm -R $out/share/noctalia-shell/Bin/dev
 
     runHook postInstall
   '';
