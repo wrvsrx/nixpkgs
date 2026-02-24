@@ -66,6 +66,7 @@ buildGoModule (finalAttrs: {
 
   env = lib.optionalAttrs stdenv.cc.isGNU {
     CGO_CFLAGS = toString [ "-Wno-return-local-addr" ];
+    CGO_CFLAGS_ALLOW = ".*--define-prefix.*";
   };
 
   postPatch = ''
