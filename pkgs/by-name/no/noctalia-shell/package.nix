@@ -6,7 +6,7 @@
 
   # build
   qt6,
-  quickshell,
+  noctalia-qs,
 
   # runtime deps
   bluez,
@@ -68,13 +68,13 @@ let
 in
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "noctalia-shell";
-  version = "4.5.0";
+  version = "4.6.1";
 
   src = fetchFromGitHub {
     owner = "noctalia-dev";
     repo = "noctalia-shell";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-Y5P0RYO9NKxa4UZBoGmmxtz3mEwJrBOfvdLJRGjV2Os=";
+    hash = "sha256-WjIQ8jCfriQVlatkr/qCoPEth4hNwFo6S5xZQ9y09Io=";
   };
 
   nativeBuildInputs = [
@@ -90,7 +90,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     runHook preInstall
 
     mkdir -p $out/share/noctalia-shell $out/bin
-    ln -s ${quickshell}/bin/qs $out/bin/noctalia-shell
+    ln -s ${noctalia-qs}/bin/qs $out/bin/noctalia-shell
 
     cp -R \
       Assets Commons CREDITS.md Helpers Modules Services Shaders Scripts Widgets shell.qml \
@@ -119,6 +119,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     license = lib.licenses.mit;
     mainProgram = "noctalia-shell";
     maintainers = with lib.maintainers; [ spacedentist ];
-    platforms = quickshell.meta.platforms;
+    platforms = noctalia-qs.meta.platforms;
   };
 })
