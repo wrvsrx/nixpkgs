@@ -29,7 +29,7 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchFromGitHub {
     owner = "noctalia-dev";
     repo = "noctalia-qs";
-    tag = "v0.0.4";
+    tag = "v${finalAttrs.version}";
     hash = "sha256-1QXO0UPKdDFc0dmIuyV8u/P+7ZlPtzxWbIakeUNJ0z8=";
   };
 
@@ -78,7 +78,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Flexbile QtQuick based desktop shell toolkit";
     license = licenses.lgpl3Only;
     platforms = platforms.linux;
-    mainProgram = "noctalia-qs";
+    mainProgram = "qs";
     maintainers = with lib.maintainers; [ iynaix ];
   };
 })
