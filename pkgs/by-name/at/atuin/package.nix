@@ -19,6 +19,11 @@ rustPlatform.buildRustPackage (finalAttrs: {
     hash = "sha256-hLt6CDHEPV8BVpOADVn4bLNcBz89eC2jKtIexHG0yAY=";
   };
 
+  patchPhase = ''
+    substituteInPlace Cargo.toml \
+      --replace-fail "rust-version = \"1.94.0\"" "rust-version = \"1.93.0\""
+  '';
+
   cargoHash = "sha256-VYwzMnfc/a4Sghmr5oMfhvoMkaWlY4w4e4Flu8MWQg0=";
 
   # atuin's default features include 'check-updates', which do not make sense
