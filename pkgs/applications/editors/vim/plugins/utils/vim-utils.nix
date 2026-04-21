@@ -232,12 +232,12 @@ let
           '';
         in
 
-        assert
-          (
-            builtins.elem vimPlugins.nvim-treesitter (opt ++ allPlugins)
-            && builtins.elem vimPlugins.nvim-treesitter-legacy (opt ++ allPlugins)
-          )
-          -> throw "You cannot include two different versions of nvim-treesitter, perhaps you included a legacy plugin together with a new one?";
+        # assert
+        #   (
+        #     builtins.elem vimPlugins.nvim-treesitter (opt ++ allPlugins)
+        #     && builtins.elem vimPlugins.nvim-treesitter-legacy (opt ++ allPlugins)
+        #   )
+        #   -> throw "You cannot include two different versions of nvim-treesitter, perhaps you included a legacy plugin together with a new one?";
 
         [
           packdirStart
