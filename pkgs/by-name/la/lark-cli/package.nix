@@ -29,8 +29,12 @@ buildGoModule (finalAttrs: {
     let
       metaDataRaw = fetchurl {
         name = "meta_dataraw.json";
-        url = "https://web.archive.org/web/20260626061256/https://open.feishu.cn/api/tools/open/api_definition?protocol=meta&client_version=v${finalAttrs.version}";
-        hash = "sha256-W6KOtDW6gkZIqGa0A5QL0rVjVkRjM+gwW4S3AddPN1M=";
+        url = "https://open.feishu.cn/api/tools/open/api_definition?protocol=meta&client_version=v${finalAttrs.version}";
+        hash = "sha256-SK0ovzE36GtyfMhg9DGtap0+YrFeZQrDIeBVjHDzvM8=";
+        postFetch = ''
+          ${lib.getExe jq} -S . "$out" > normalized
+          mv normalized "$out"
+        '';
       };
 
       metaData =
@@ -56,6 +60,8 @@ buildGoModule (finalAttrs: {
     "-X github.com/larksuite/cli/internal/build.Version=v${finalAttrs.version}"
     "-X github.com/larksuite/cli/internal/build.Date=2026-06-01"
   ];
+
+  passthru.updateScript = ./update.sh;
 
   passthru.tests.version = testers.testVersion {
     package = finalAttrs.finalPackage;
