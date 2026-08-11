@@ -10,7 +10,7 @@
 
 buildGoModule (finalAttrs: {
   pname = "lark-cli";
-  version = "1.0.58";
+  version = "1.0.86";
 
   __structuredAttrs = true;
 
@@ -18,10 +18,10 @@ buildGoModule (finalAttrs: {
     owner = "larksuite";
     repo = "cli";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-MqaxcmzX/79vM2EI8wD4ZAFsUfqWvPAovlpmuDP1IWU=";
+    hash = "sha256-xa+IXmjR5PqaDWPhW+zfMVN54j2dbPyxal3Ga7KRosg=";
   };
 
-  vendorHash = "sha256-M0/Y62Y+M/P1B/YIDjX5bEyB/GKihCWQakTWVd7zvBg=";
+  vendorHash = "sha256-WClES7ilNmQ0018Qf13tNHouE/SIwh99MaewZ7VGQ2E=";
 
   subPackages = [ "." ];
 
@@ -58,7 +58,7 @@ buildGoModule (finalAttrs: {
     "-s"
     "-w"
     "-X github.com/larksuite/cli/internal/build.Version=v${finalAttrs.version}"
-    "-X github.com/larksuite/cli/internal/build.Date=2026-06-01"
+    "-X github.com/larksuite/cli/internal/build.Date=2026-08-11"
   ];
 
   passthru.updateScript = ./update.sh;
