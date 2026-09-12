@@ -44,11 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
     inherit (finalAttrs) pname version src;
     pnpm = pnpm_11;
     fetcherVersion = 4;
-    hash =
-      if stdenv.hostPlatform.isAarch64 then
-        "sha256-/VnxXqJ3MUXIPB4rXOKu5FtArYVjyEry4ptRNHxYnrc="
-      else
-        "sha256-9/sSWKnsgS9Owl+TDTqzz+VjFlYo3hOWhaDJ4ReYUMA=";
+    hash = "sha256-/VnxXqJ3MUXIPB4rXOKu5FtArYVjyEry4ptRNHxYnrc=";
   };
 
   nativeBuildInputs = [
