@@ -30,14 +30,10 @@ stdenv.mkDerivation (finalAttrs: {
 
   # Upstream's client build requires a Git commit stamp matching
   # /^[0-9a-f]{7,40}$/ and otherwise shells out to `git rev-parse HEAD`. The
-  # release tarball has no .git, so a placeholder is supplied here instead of
-  # using `leaveDotGit`, which would force fetchFromGitHub onto the fetchgit
-  # (git clone) path just to read the commit.
-  #
-  # `official` selects upstream's official client build profile, which is what
-  # makes ui-brand-official fill the sidebar brand slots and supplies
-  # DSH_CLIENT_TITLE itself. Without it the slot stays empty and the sidebar
-  # falls back to "DSH Local Build".
+  # release tarball has no .git, so the stamp is passed here instead of using
+  # `leaveDotGit`, which would force fetchFromGitHub onto the fetchgit (git
+  # clone) path just to read the commit; update.sh keeps it in sync with the
+  # release tag.
   env = {
     DSH_CLIENT_COMMIT_HASH = "183f08e9c6dde7e36cd2318eaee70b0da08fb35e";
   };
