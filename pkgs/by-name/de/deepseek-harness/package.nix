@@ -10,7 +10,6 @@
   pnpmBuildHook,
   pnpmConfigHook,
   runCommand,
-  nix-update-script,
   testers,
   ...
 }:
@@ -40,7 +39,7 @@ stdenv.mkDerivation (finalAttrs: {
   # DSH_CLIENT_TITLE itself. Without it the slot stays empty and the sidebar
   # falls back to "DSH Local Build".
   env = {
-    DSH_CLIENT_COMMIT_HASH = "ffffffffffffffffffffffffffffffffffffffff";
+    DSH_CLIENT_COMMIT_HASH = "183f08e9c6dde7e36cd2318eaee70b0da08fb35e";
   };
 
   # pnpm resolves platform-conditioned optional dependencies per host
@@ -112,13 +111,7 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   passthru = {
-    updateScript = nix-update-script {
-      # TODO: Drop after 1.0
-      extraArgs = [
-        "--version"
-        "unstable"
-      ];
-    };
+    updateScript = ./update.sh;
     tests = {
       version = testers.testVersion { package = finalAttrs.finalPackage; };
 
