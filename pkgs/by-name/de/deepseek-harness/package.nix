@@ -5,7 +5,7 @@
   fetchFromGitHub,
   fetchPnpmDeps,
   makeBinaryWrapper,
-  nodejs_24,
+  nodejs,
   pnpm_11,
   pnpmBuildHook,
   pnpmConfigHook,
@@ -26,15 +26,22 @@ stdenv.mkDerivation (finalAttrs: {
     owner = "deepseek-ai";
     repo = "deepseek-harness";
     rev = "dsh-v${finalAttrs.version}";
-    hash = "sha256-UqzUag5ux278+tur2GvUsc/Ml7OioU8jcG+kilJp6Mo=";
+    hash = "sha256-UPjEF7R3OCO5o+grTuHXaY9zGOSPSDXKBDtzVliSiPA=";
+  };
 
-    # Capture the commit hash at fetch time to avoid git build dependency
-    leaveDotGit = true;
-    postFetch = ''
-      cd $out
-      git rev-parse HEAD > .git-commit
-      rm -rf .git
-    '';
+  # Upstream's client build requires a Git commit stamp matching
+  # /^[0-9a-f]{7,40}$/ and otherwise shells out to `git rev-parse HEAD`. The
+  # release tarball has no .git, so a placeholder is supplied here instead of
+  # using `leaveDotGit`, which would force fetchFromGitHub onto the fetchgit
+  # (git clone) path just to read the commit.
+  #
+  # `official` selects upstream's official client build profile, which is what
+  # makes ui-brand-official fill the sidebar brand slots and supplies
+  # DSH_CLIENT_TITLE itself. Without it the slot stays empty and the sidebar
+  # falls back to "DSH Local Build".
+  env = {
+    DSH_BUILD_CLIENT_PROFILE = "official";
+    DSH_CLIENT_COMMIT_HASH = "ffffffffffffffffffffffffffffffffffffffff";
   };
 
   # pnpm resolves platform-conditioned optional dependencies per host
@@ -48,18 +55,12 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [
-    nodejs_24
+    nodejs
     pnpmConfigHook
     pnpmBuildHook
     pnpm_11
     makeBinaryWrapper
   ];
-
-  preBuild = ''
-    export DSH_CLIENT_COMMIT_HASH=$(cat $src/.git-commit)
-    # Avoid client window title defaulting to "DSH Local Build";
-    export DSH_CLIENT_TITLE="DeepSeek Harness"
-  '';
 
   # The root 'build' script runs both 'build:lib' and 'build:web'
   # pnpmBuildHook runs 'pnpm run build' by default
@@ -68,9 +69,6 @@ stdenv.mkDerivation (finalAttrs: {
 
     mkdir -p $out/libexec/dsh
     cp -r . $out/libexec/dsh/
-
-    # The .git-commit marker only feeds the build-time commit stamp.
-    rm -f $out/libexec/dsh/.git-commit
 
     # The whole tree is shipped because workspace packages resolve in-tree via
     # linkWorkspacePackages; dev/test/doc files come along for the ride.
@@ -102,7 +100,7 @@ stdenv.mkDerivation (finalAttrs: {
     # --expose-internals is required by the HMR service and the loader's
     # internal module loader; it must precede the script path so it lands in
     # process.execArgv. Depends on Node internals, not a stable API.
-    makeBinaryWrapper ${nodejs_24}/bin/node $out/bin/dsh \
+    makeBinaryWrapper ${nodejs}/bin/node $out/bin/dsh \
       --add-flags "--expose-internals $out/libexec/dsh/apps/cli/lib/bin.js"
 
     runHook postInstall
