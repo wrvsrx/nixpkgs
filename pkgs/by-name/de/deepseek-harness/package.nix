@@ -91,6 +91,16 @@ stdenv.mkDerivation (finalAttrs: {
       done
     done
 
+    # nixpkgs Node's hardening changes the getter machine code inspected by
+    # node-addon-require-builtin, causing Unsupported/no-getter at profile boot.
+    # Prefer the internals already exposed by our wrapper, as the Cordis loader
+    # does, and retain the native addon as a fallback.
+    # https://github.com/apphousero/deepseek-harness-flake/pull/10
+    substituteInPlace $out/libexec/dsh/packages/boot/app-boot/lib/index.js \
+      --replace-fail \
+      'const addon = createRequire(import.meta.url)("node-addon-require-builtin");' \
+      'const addon = ((req) => ({ requireBuiltin: (id) => { if (process.execArgv.includes("--expose-internals")) { try { return req(id); } catch {} } return req("node-addon-require-builtin").requireBuiltin(id); } }))(createRequire(import.meta.url));'
+
     # --expose-internals is required by the HMR service and the loader's
     # internal module loader; it must precede the script path so it lands in
     # process.execArgv. Depends on Node internals, not a stable API.
