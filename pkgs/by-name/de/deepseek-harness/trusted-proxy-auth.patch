@@ -1,0 +1,646 @@
+diff --git a/.agents/notes/implemented/feature/2026-10-12-trusted-proxy-authentication.i18n.yaml b/.agents/notes/implemented/feature/2026-10-12-trusted-proxy-authentication.i18n.yaml
+new file mode 100644
+index 0000000000..70c7f8a469
+--- /dev/null
++++ b/.agents/notes/implemented/feature/2026-10-12-trusted-proxy-authentication.i18n.yaml
+@@ -0,0 +1,19 @@
++# Bilingual-pair consistency record for 2026-10-12-trusted-proxy-authentication.md (docs/i18n/README.md): per heading
++# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
++# After editing either side, bring the other along and re-record with:
++#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-12-trusted-proxy-authentication.md
++/agent-note-trusted-proxy-authentication:
++  en: 05076947fbf4ea73
++  zh: 90b473a68d60c783
++/agent-note-trusted-proxy-authentication/problem:
++  en: 51edfbf5aa4a0ae7
++  zh: 79062f85d57c7186
++/agent-note-trusted-proxy-authentication/decision:
++  en: 2185e6a5d0ecf12c
++  zh: 90175abfece9d106
++/agent-note-trusted-proxy-authentication/alternatives-considered:
++  en: fe6f1b68139882d7
++  zh: a8e3196654226dbc
++/agent-note-trusted-proxy-authentication/consequences:
++  en: 60d41f455766fddb
++  zh: dfd9667a54d35427
+diff --git a/.agents/notes/implemented/feature/2026-10-12-trusted-proxy-authentication.md b/.agents/notes/implemented/feature/2026-10-12-trusted-proxy-authentication.md
+new file mode 100644
+index 0000000000..5384199713
+--- /dev/null
++++ b/.agents/notes/implemented/feature/2026-10-12-trusted-proxy-authentication.md
+@@ -0,0 +1,23 @@
++# Agent Note: Trusted proxy authentication
++
++Status: implemented
++
++English | [中文](2026-10-12-trusted-proxy-authentication.zh.md)
++
++## Problem
++
++A deployment protected by an external identity provider otherwise requires a second browser enrollment using a launch token from the host journal. Retaining a separate dsh cookie as an alternative admission path would weaken the deployment's single sign-on policy.
++
++## Decision
++
++Connection supports an explicit, exclusive proxy mode selected by a private key-file path. The authenticating proxy inserts a per-deployment 256-bit credential only after user authorization. Dsh validates it in constant time for each request and upgrade, while retaining browser-trust checks. Index requests receive the same trust checks. Proxy mode neither reads browser-session credentials nor mints a launch token or browser cookie.
++
++## Alternatives considered
++
++**Disable authentication on loopback.** Other local processes could then act as the operator after a network-policy mistake. A separate proxy key preserves an application-level check.
++
++**Harvest the launch token from logs.** This couples access to output formatting and retains two independently managed browser sessions. Exclusive proxy authentication directly expresses the deployment's access policy.
++
++## Consequences
++
++A leaked proxy key permits operator access wherever the backend is reachable. Private runtime files, public-header removal, post-authorization injection, and local network restrictions are mandatory deployment controls. The proxy owns user authorization, logout, and session refresh; established streams are not retroactively revoked. Rotation requires both Connection activation and proxy reload. The default local browser-token mode remains available when no proxy key file is configured.
+diff --git a/.agents/notes/implemented/feature/2026-10-12-trusted-proxy-authentication.zh.md b/.agents/notes/implemented/feature/2026-10-12-trusted-proxy-authentication.zh.md
+new file mode 100644
+index 0000000000..2b4d343967
+--- /dev/null
++++ b/.agents/notes/implemented/feature/2026-10-12-trusted-proxy-authentication.zh.md
+@@ -0,0 +1,23 @@
++# Agent Note: 可信代理认证
++
++Status: implemented
++
++[English](2026-10-12-trusted-proxy-authentication.md) | 中文
++
++## 问题
++
++受外部身份提供方保护的部署，原本还需要从主机日志获取启动 token，再为浏览器登记一次会话。如果保留独立 dsh cookie 作为替代准入路径，就会削弱部署的单点登录策略。
++
++## 决策
++
++Connection 支持通过私有密钥文件路径显式选择的互斥代理模式。认证代理只在用户授权后注入每个部署独有的 256 位凭据。Dsh 对每个请求及升级使用恒定时间比较验证它，同时保留浏览器信任检查。index 请求执行相同的信任检查。代理模式既不读取浏览器会话凭据，也不生成启动 token 或浏览器 cookie。
++
++## 考虑过的替代方案
++
++**关闭 loopback 认证。** 网络策略一旦配置错误，其他本地进程就能以 operator 身份执行操作。独立代理密钥保留了应用层检查。
++
++**从日志提取启动 token。** 这会使访问流程依赖输出格式，并保留两套独立管理的浏览器会话。互斥的代理认证直接表达了部署的访问策略。
++
++## 后果
++
++代理密钥泄露后，持有者可从后端可达的位置获得 operator 访问权限。私有运行时文件、公网认证头清除、授权后注入以及本地网络限制都是部署必须实施的控制措施。代理负责用户授权、注销及会话刷新；已建立的流不会被追溯撤销。轮换需要重新激活 Connection 并重新加载代理。未配置代理密钥文件时，默认的本地浏览器 token 模式仍然可用。
+diff --git a/docs/config-catalog.md b/docs/config-catalog.md
+index 2d38ab513d..4f84cd2b48 100644
+--- a/docs/config-catalog.md
++++ b/docs/config-catalog.md
+@@ -437,7 +437,7 @@ export type Config = LocalConfig
+ ## `@deepseek-ai/dsh-client-connection`
+ 
+ - `inject`: `credentials`
+-- `source`: [`packages/client/connection/src/index.ts:92`](../packages/client/connection/src/index.ts)
++- `source`: [`packages/client/connection/src/index.ts:93`](../packages/client/connection/src/index.ts)
+ 
+ ```ts config-catalog
+ /** Browser authentication, request limits, and connection recovery configuration. */
+@@ -455,6 +455,8 @@ export interface ConnectionConfig {
+   trustedHosts?: string[]
+   /** Absolute browser-session lifetime in days. Default: 30. */
+   cookieMaxAgeDays?: number
++  /** Private 256-bit hex key file; enables exclusive proxy authentication instead of browser cookies. */
++  trustedProxySecretFile?: string
+   /** Maximum buffered JSON body for every `/api` request. Default: 300 MiB. */
+   maxRequestBodyBytes?: number
+ }
+diff --git a/docs/config-catalog.zh.md b/docs/config-catalog.zh.md
+index 462a637a8c..b9eb74ed49 100644
+--- a/docs/config-catalog.zh.md
++++ b/docs/config-catalog.zh.md
+@@ -439,7 +439,7 @@ export type Config = LocalConfig
+ ## `@deepseek-ai/dsh-client-connection`
+ 
+ - `inject`: `credentials`
+-- `source`: [`packages/client/connection/src/index.ts:92`](../packages/client/connection/src/index.ts)
++- `source`: [`packages/client/connection/src/index.ts:93`](../packages/client/connection/src/index.ts)
+ 
+ ```ts config-catalog
+ /** Browser authentication, request limits, and connection recovery configuration. */
+@@ -457,6 +457,8 @@ export interface ConnectionConfig {
+   trustedHosts?: string[]
+   /** Absolute browser-session lifetime in days. Default: 30. */
+   cookieMaxAgeDays?: number
++  /** Private 256-bit hex key file; enables exclusive proxy authentication instead of browser cookies. */
++  trustedProxySecretFile?: string
+   /** Maximum buffered JSON body for every `/api` request. Default: 300 MiB. */
+   maxRequestBodyBytes?: number
+ }
+diff --git a/docs/event-producer-consumer.md b/docs/event-producer-consumer.md
+index d70b40fdcc..e6556562ba 100644
+--- a/docs/event-producer-consumer.md
++++ b/docs/event-producer-consumer.md
+@@ -32,7 +32,7 @@ This matrix shows which packages dispatch each harness-owned event and which pac
+ | `authorization/settled` | `emit` | [`packages/credentials/authorization/src/index.ts:57`](../packages/credentials/authorization/src/index.ts) | [`authorization`](../packages/credentials/authorization) (`events.dispatch`) | - |
+ | `commands/change` | `emit` | [`packages/interaction/commands/src/types.ts:89`](../packages/interaction/commands/src/types.ts) | [`commands`](../packages/interaction/commands) (`events.dispatch`) | `remotes` |
+ | `compaction/summary-error` | `waterfall` | [`packages/compaction/compaction/src/index.ts:106`](../packages/compaction/compaction/src/index.ts) | [`compaction-basic`](../packages/compaction/compaction-basic) (`waterfall`) | [`compaction-image-offload`](../packages/compaction/compaction-image-offload) |
+-| `connection/request` | `waterfall` | [`packages/client/connection/src/index.ts:67`](../packages/client/connection/src/index.ts) | `connection` (`waterfall`) | - |
++| `connection/request` | `waterfall` | [`packages/client/connection/src/index.ts:68`](../packages/client/connection/src/index.ts) | `connection` (`waterfall`) | - |
+ | `cordis/dynamic-package` | `emit` | [`packages/extensions/cordis-host-runner/src/types.ts:383`](../packages/extensions/cordis-host-runner/src/types.ts) | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) (`emit`) | `remotes` |
+ | `cordis/dynamic-retract` | `emit` | [`packages/extensions/cordis-host-runner/src/types.ts:389`](../packages/extensions/cordis-host-runner/src/types.ts) | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) (`emit`) | `remotes` |
+ | `cordis/inspect-query` | `emit` | [`packages/extensions/cordis-host-runner/src/types.ts:395`](../packages/extensions/cordis-host-runner/src/types.ts) | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) (`emit`) | `remotes` |
+diff --git a/docs/event-producer-consumer.zh.md b/docs/event-producer-consumer.zh.md
+index 25bb53ea61..af18f8f2a6 100644
+--- a/docs/event-producer-consumer.zh.md
++++ b/docs/event-producer-consumer.zh.md
+@@ -34,7 +34,7 @@
+ | `authorization/settled` | `emit` | [`packages/credentials/authorization/src/index.ts:57`](../packages/credentials/authorization/src/index.ts) | [`authorization`](../packages/credentials/authorization) (`events.dispatch`) | - |
+ | `commands/change` | `emit` | [`packages/interaction/commands/src/types.ts:89`](../packages/interaction/commands/src/types.ts) | [`commands`](../packages/interaction/commands) (`events.dispatch`) | `remotes` |
+ | `compaction/summary-error` | `waterfall` | [`packages/compaction/compaction/src/index.ts:106`](../packages/compaction/compaction/src/index.ts) | [`compaction-basic`](../packages/compaction/compaction-basic) (`waterfall`) | [`compaction-image-offload`](../packages/compaction/compaction-image-offload) |
+-| `connection/request` | `waterfall` | [`packages/client/connection/src/index.ts:67`](../packages/client/connection/src/index.ts) | `connection` (`waterfall`) | - |
++| `connection/request` | `waterfall` | [`packages/client/connection/src/index.ts:68`](../packages/client/connection/src/index.ts) | `connection` (`waterfall`) | - |
+ | `cordis/dynamic-package` | `emit` | [`packages/extensions/cordis-host-runner/src/types.ts:383`](../packages/extensions/cordis-host-runner/src/types.ts) | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) (`emit`) | `remotes` |
+ | `cordis/dynamic-retract` | `emit` | [`packages/extensions/cordis-host-runner/src/types.ts:389`](../packages/extensions/cordis-host-runner/src/types.ts) | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) (`emit`) | `remotes` |
+ | `cordis/inspect-query` | `emit` | [`packages/extensions/cordis-host-runner/src/types.ts:395`](../packages/extensions/cordis-host-runner/src/types.ts) | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) (`emit`) | `remotes` |
+diff --git a/packages/bundle/web-app/README.i18n.yaml b/packages/bundle/web-app/README.i18n.yaml
+index a50173349e..7fe415dea0 100644
+--- a/packages/bundle/web-app/README.i18n.yaml
++++ b/packages/bundle/web-app/README.i18n.yaml
+@@ -24,8 +24,8 @@
+   en: a9ee366c5af68a6c
+   zh: 2711d7a3926e1101
+ /deepseek-ai-dsh-web-app/use-this-package/listening-trust-and-public-deployments:
+-  en: a79add86cb73d966
+-  zh: 78b58259f98ed063
++  en: e21cf9bd12f8f236
++  zh: 869d1787e32d1c17
+ /deepseek-ai-dsh-web-app/use-this-package/running-over-ssh:
+   en: 45db677dcc91c5c9
+   zh: 75b765f7f1e15035
+@@ -39,8 +39,8 @@
+   en: 954a424ea7182c8f
+   zh: 9339bc21dba44d40
+ /deepseek-ai-dsh-web-app/understand-the-implementation/advertised-application-url:
+-  en: ca977d2b2bcf72c5
+-  zh: 2b81b377c133c1a8
++  en: 1f6eb6f447b4a0ba
++  zh: 3c30015d6dc001a2
+ /deepseek-ai-dsh-web-app/understand-the-implementation/readiness:
+   en: 973128fd346869df
+   zh: 54e6792f9f82a192
+diff --git a/packages/bundle/web-app/README.md b/packages/bundle/web-app/README.md
+index 32076cf231..c5aff67064 100644
+--- a/packages/bundle/web-app/README.md
++++ b/packages/bundle/web-app/README.md
+@@ -59,13 +59,16 @@ Saved model selections override the composition default. The settings card accep
+ The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-web-app) lists this runtime plugin's accepted fields and their JSDoc. The shipped composition inserts the `schedule` service row and the `ui-schedule` task page row, while the clock reading and the four reminder tools belong to the `standard`, `cordis`, and `ptc` presets. The `tool-subagent` and `tool-subagent-fork` rows in those presets deny the four tools, so a delegated child's scope never lists them.
+ 
+ <a id="public-deployments"></a>
++
+ ### Listening, trust, and public deployments
+ 
++`--trusted-proxy-secret-file /run/credentials/dsh/proxy-key` enables exclusive proxy authentication through Connection's `trustedProxySecretFile` field. It advertises a clean URL and accepts neither launch tokens nor browser-session cookies. The [Connection reference](../../client/connection/README.md#trusted-proxy-authentication) defines the key format and required proxy protections.
++
+ By default the GUI listens on loopback and accepts connections from this machine only; repeatable `--trusted-host` adds the authorities its Host/Origin fence accepts, so a remote browser reaches it behind a prefix-stripping proxy or through a port-forwarding client that presents a trusted hostname.
+ 
+ `--public-url` advertises the HTTP(S) root browsers use — the printed and opened startup URL, `DSH_WEB_URL`, and the web-surface orientation. Advertisement grants no trust: the browser-visible authority must also be named with `--trusted-host`. The flag configures no listener, routing, or cookie scope, because the proxy owns the external leg: [Publish the Web UI behind a reverse proxy](../../../docs/user/guide/public-deployments.md) lists what such a deployment must provide.
+ 
+-The printed URL contains a process credential; share it only with intended users, and `printUrl: false` suppresses the line with or without `--public-url`.
++In default browser-token mode the printed URL contains a process credential; share it only with intended users, and `printUrl: false` suppresses the line with or without `--public-url`.
+ 
+ ### Running over SSH
+ 
+@@ -91,7 +94,7 @@ A patch replaces the targeted row's whole `config`, so each web row restates eve
+ 
+ ### Advertised application URL
+ 
+-Startup display and browser handoff receive the advertised root with its launch token; the web-surface prompt and `DSH_WEB_URL` receive it clean. The root itself is defined under [Listening, trust, and public deployments](#public-deployments).
++Startup display and browser handoff receive the advertised root with its launch token (without a token in trusted-proxy mode); the web-surface prompt and `DSH_WEB_URL` receive it clean. The root itself is defined under [Listening, trust, and public deployments](#public-deployments).
+ 
+ ### Readiness
+ 
+diff --git a/packages/bundle/web-app/README.zh.md b/packages/bundle/web-app/README.zh.md
+index 750407dd0f..78b558c278 100644
+--- a/packages/bundle/web-app/README.zh.md
++++ b/packages/bundle/web-app/README.zh.md
+@@ -59,13 +59,16 @@ dsh --profile web --no-open --port 8080
+ 生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-app)列出了本运行时插件接受的字段及其 JSDoc。随发行版交付的组合插入 `schedule` 服务行与 `ui-schedule` 任务页面行，时钟读数与四个提醒工具则属于 `standard`、`cordis` 与 `ptc` 三个 preset。这三个 preset 的 `tool-subagent` 与 `tool-subagent-fork` 两行都 deny 这四个工具，因此被委派子 agent 的作用域不会列出它们。
+ 
+ <a id="public-deployments"></a>
++
+ ### 监听、信任与公开部署
+ 
++`--trusted-proxy-secret-file /run/credentials/dsh/proxy-key` 通过 Connection 的 `trustedProxySecretFile` 字段启用互斥的代理认证模式。它公告干净的 URL，不接受启动 token 或浏览器会话 cookie。[Connection 参考](../../client/connection/README.zh.md#trusted-proxy-authentication) 定义了密钥格式和代理必须实施的保护。
++
+ 默认情况下 GUI 只在 loopback 上监听，只接受本机的连接；可重复的 `--trusted-host` 会添加其 Host/Origin 栅栏接受的 authority，因此远端浏览器要么经由剥离前缀的代理访问，要么通过以可信主机名呈现的端口转发客户端访问。
+ 
+ `--public-url` 公告浏览器使用的 HTTP(S) 根——打印与打开的启动 URL、`DSH_WEB_URL` 与 web 表层定位。公告不授予任何信任：浏览器可见的 authority 还必须用 `--trusted-host` 点名。该 flag 不配置监听器、路由或 cookie 作用域，因为外部链路归代理所有：[在反向代理之后发布 Web UI](../../../docs/user/guide/public-deployments.zh.md)列出了这样的部署必须提供什么。
+ 
+-打印的 URL 包含进程凭据，只应与预期用户分享；`printUrl: false` 无论是否配置 `--public-url` 都会抑制该行。
++默认浏览器 token 模式下，打印的 URL 包含进程凭据，只应与预期用户分享；`printUrl: false` 无论是否配置 `--public-url` 都会抑制该行。
+ 
+ ### 通过 SSH 运行
+ 
+@@ -91,7 +94,7 @@ patch 会替换目标行的整个 `config`，因此每个 Web 行都重述自己
+ 
+ ### 公告应用 URL
+ 
+-启动显示与浏览器交接接收附带启动 token 的公告根；web 表层提示词与 `DSH_WEB_URL` 接收不含凭据的形式。根本身由[监听、信任与公开部署](#public-deployments)定义。
++启动显示与浏览器交接接收附带启动 token 的公告根（可信代理模式下不含 token）；web 表层提示词与 `DSH_WEB_URL` 接收不含凭据的形式。根本身由[监听、信任与公开部署](#public-deployments)定义。
+ 
+ ### 就绪宣告
+ 
+diff --git a/packages/bundle/web-app/cordis.patch.yml b/packages/bundle/web-app/cordis.patch.yml
+index a452579e9d..4c5bb02eca 100644
+--- a/packages/bundle/web-app/cordis.patch.yml
++++ b/packages/bundle/web-app/cordis.patch.yml
+@@ -228,12 +228,13 @@
+     # advertised public URL contributes nothing to it.
+     - id: connection
+       name: '@deepseek-ai/dsh-client-connection'
+-      inject: [webRuntime]
++      inject: [webRuntime, webStartup]
+       config:
+         # LAN literals derived from the active bind plus --trusted-host extras.
+         # A deployment adding authorities keeps this expression and concatenates
+         # its literals, for example: ['app.internal', ...ctx.webRuntime.trustedHosts].
+         trustedHosts: !!js ctx.webRuntime.trustedHosts
++        trustedProxySecretFile: !!js ctx.webStartup.trustedProxySecretFile
+ 
+     # Raw Blob and ReadableStream uploads run independently of Connection's
+     # RPC and generation service.
+diff --git a/packages/bundle/web-app/src/startup.ts b/packages/bundle/web-app/src/startup.ts
+index 749dd8ea5d..d96ea1419e 100644
+--- a/packages/bundle/web-app/src/startup.ts
++++ b/packages/bundle/web-app/src/startup.ts
+@@ -36,6 +36,8 @@ export interface WebStartupValues {
+   publicUrl?: string
+   /** Explicit `--trusted-host` authorities, in argument order. */
+   trustedHosts: string[]
++  /** Private key file enabling exclusive trusted-proxy authentication. */
++  trustedProxySecretFile?: string
+ }
+ 
+ /** The web flag family, as commander parsed it. */
+@@ -45,6 +47,7 @@ interface WebOptions {
+   port?: string
+   publicUrl?: string
+   trustedHost?: string[]
++  trustedProxySecretFile?: string
+ }
+ 
+ /**
+@@ -60,6 +63,7 @@ function webCommand(): Command {
+     .option('--no-open', 'do not open the Web UI in the default browser')
+     .option('--port <port>', 'listen port; pass 0 to let the OS pick a free one')
+     .option('--public-url <url>', 'advertise this HTTP(S) root in the printed, opened, web-surface, and DSH_WEB_URL forms; grants no trust')
++    .option('--trusted-proxy-secret-file <path>', 'require a private proxy header using the 256-bit hex key in this file; disables browser-token login')
+     .option('--trusted-host <authority...>', 'extra authority the /api browser-trust fence accepts (host or host:port; repeatable)')
+     .addHelpText('after', `
+ Examples:
+@@ -101,6 +105,7 @@ export function apply(ctx: Context): void {
+       ...options.port !== undefined && { port: Number(options.port) },
+       ...options.publicUrl !== undefined && { publicUrl: options.publicUrl },
+       trustedHosts: options.trustedHost ?? [],
++      ...options.trustedProxySecretFile !== undefined && { trustedProxySecretFile: options.trustedProxySecretFile },
+     } satisfies WebStartupValues)
+   })
+   parseCmdline(ctx, program)
+diff --git a/packages/bundle/web-app/tests/startup.spec.ts b/packages/bundle/web-app/tests/startup.spec.ts
+index 322e98a818..26015d3164 100644
+--- a/packages/bundle/web-app/tests/startup.spec.ts
++++ b/packages/bundle/web-app/tests/startup.spec.ts
+@@ -93,6 +93,13 @@ export const apply = ctx => globalThis.__webStartupApply(ctx)
+ }
+ 
+ describe('web command-line provider', () => {
++  it('publishes the proxy key path without loading or disclosing the key', async () => {
++    const { values, observed } = await bootProvider(['--trusted-proxy-secret-file', '/run/credentials/dsh/proxy-key'])
++    expect(observed.exits).toEqual([])
++    expect(observed.out).toBe('')
++    expect(values?.trustedProxySecretFile).toBe('/run/credentials/dsh/proxy-key')
++  })
++
+   it('publishes each flag and releases direct service expressions', async () => {
+     const { values, observed } = await bootProvider([
+       '--host', '127.0.0.1',
+diff --git a/packages/client/connection/README.i18n.yaml b/packages/client/connection/README.i18n.yaml
+index 7498a796dd..20555c031c 100644
+--- a/packages/client/connection/README.i18n.yaml
++++ b/packages/client/connection/README.i18n.yaml
+@@ -18,8 +18,11 @@
+   en: 13b54969ff1d00a4
+   zh: 4d2ffff0445472ed
+ /deepseek-ai-dsh-client-connection/browser-authentication-and-request-trust:
+-  en: ab52ef146d0b5b42
+-  zh: 6314d50cfe5683e1
++  en: eaf8071fe6dc86f5
++  zh: 6ad7124be337fd49
++/deepseek-ai-dsh-client-connection/browser-authentication-and-request-trust/trusted-proxy-authentication:
++  en: e56ba17e022c80e2
++  zh: 7d31489108f50f04
+ /deepseek-ai-dsh-client-connection/connection-generation:
+   en: 116f94e44c0d87e7
+   zh: 59ef48984154d858
+diff --git a/packages/client/connection/README.md b/packages/client/connection/README.md
+index f973fe1d4e..9fde0b1fe7 100644
+--- a/packages/client/connection/README.md
++++ b/packages/client/connection/README.md
+@@ -36,7 +36,7 @@ The browser uses HTTP POST for Remote unary calls. API Gateway owns the `/api/re
+ <a id="browser-authentication-and-request-trust"></a>
+ ## Browser authentication and request trust
+ 
+-Every Host RPC method and WebSocket stream requires one browser session; there is no method-specific loopback tier. Each process mints a random launch token. `dsh-web-app` prints and opens its application URL with `?token=...`, preserving the caller's authority and mount; `frontend-static` delegates root and index requests to `ctx.connection.authorizeIndex`, which accepts that token only on `GET /`, writes an authority-bound signed cookie, and redirects to clean `./`, which drops the token and keeps the request's directory. A missing, expired, malformed, or wrong-authority cookie returns 401 before RPC dispatch. Static assets remain public. The HTTP carrier accepts no query token outside the root exchange and no Authorization-header token.
++By default, every Host RPC method and WebSocket stream requires one browser session; there is no method-specific loopback tier. Each process mints a random launch token. `dsh-web-app` prints and opens its application URL with `?token=...`, preserving the caller's authority and mount; `frontend-static` delegates root and index requests to `ctx.connection.authorizeIndex`, which accepts that token only on `GET /`, writes an authority-bound signed cookie, and redirects to clean `./`, which drops the token and keeps the request's directory. A missing, expired, malformed, or wrong-authority cookie returns 401 before RPC dispatch. Static assets remain public. The HTTP carrier accepts no query token outside the root exchange and no Authorization-header token.
+ 
+ The cookie signing secret is the owner-scoped `client-connection/browser-session` grant record in `ctx.credentials`. The local provider persists it in `$DSH_HOME/.credentials.yaml`; `BrowserAuth` loads or creates the record during Connection activation and retains the secret in memory, so request authentication is synchronous. Deleting or replacing the record takes effect on the next Connection activation. Cookies carry an absolute issue/expiry interval, defaulting to 30 days through `cookieMaxAgeDays`, and bind the normalized hostname plus port in both their deterministic name and signed payload. They are host-only, `Path=/`, `HttpOnly`, and `SameSite=Strict`; they deliberately omit `Secure` because the shipped server uses loopback HTTP.
+ 
+@@ -46,6 +46,13 @@ Every admitted request speaks for one Peer, the operator. `ctx.connection.operat
+ 
+ Authenticated shared HTTP requests pass through the `connection/request` waterfall before body transfer. A listener may refuse new requests or await `next()` through response completion; removing its owning fiber removes admission behavior. Desktop uses this hook to lock new API work during an approved installation without canceling already-admitted work. Client disconnection aborts the handler signal; the bridge stops socket writes and drains any remaining response chunks. WebSocket stream ownership remains with API Gateway.
+ 
++
++### Trusted proxy authentication
++
++Setting `trustedProxySecretFile` selects an exclusive alternative to browser sessions. The absolute path must name a private file containing 64 lowercase hex characters (32 random bytes), optionally followed by one newline. Connection reads it at activation and fails load for missing or malformed files. Each index, API request, and WebSocket upgrade must carry the exact `X-Dsh-Proxy-Secret` header; duplicate or malformed values are refused. Host, Origin, and Fetch Metadata checks still apply, including to index requests. The advertised URL has no token, no browser cookie is issued, and old cookies and launch tokens cannot authenticate requests.
++
++The TLS-terminating authenticating proxy must authorize every public route, remove client-supplied copies of the header, and inject its key only after authorization. Keep the backend inaccessible from the public network and unrelated local accounts. This shared key authenticates the proxy, not individual users: every admitted request acts as the operator. Store the key outside configuration dumps, command lines, logs, and build outputs; restart Connection and reload the proxy after rotation. Authentication is checked when a request or upgrade begins; it does not revoke an established stream. Static assets still require protection at the public proxy.
++
+ <a id="connection-generation"></a>
+ ## Connection generation
+ 
+diff --git a/packages/client/connection/README.zh.md b/packages/client/connection/README.zh.md
+index 246d875586..342184ba84 100644
+--- a/packages/client/connection/README.zh.md
++++ b/packages/client/connection/README.zh.md
+@@ -36,7 +36,7 @@ kind: "package-reference"
+ <a id="browser-authentication-and-request-trust"></a>
+ ## 浏览器认证与请求信任
+ 
+-每个 Host RPC 方法和 WebSocket 流都要求一个浏览器会话，不存在按方法区分的 loopback 层。每个进程生成一个随机启动令牌。`dsh-web-app` 打印并打开带 `?token=...` 的应用 URL，保留调用方的 authority 与挂载；`frontend-static` 把根路径和 index 请求交给 `ctx.connection.authorizeIndex`，后者只在 `GET /` 接受该令牌，写入绑定 authority 的签名 cookie，再重定向到干净的 `./`，移除令牌并保留请求目录。缺失、过期、畸形或 authority 不匹配的 cookie 会在 RPC 分发前得到 401。静态资源保持公开。HTTP 载体不在根路径交换之外接受 query token，也不接受 Authorization header token。
++默认情况下，每个 Host RPC 方法和 WebSocket 流都要求一个浏览器会话，不存在按方法区分的 loopback 层。每个进程生成一个随机启动令牌。`dsh-web-app` 打印并打开带 `?token=...` 的应用 URL，保留调用方的 authority 与挂载；`frontend-static` 把根路径和 index 请求交给 `ctx.connection.authorizeIndex`，后者只在 `GET /` 接受该令牌，写入绑定 authority 的签名 cookie，再重定向到干净的 `./`，移除令牌并保留请求目录。缺失、过期、畸形或 authority 不匹配的 cookie 会在 RPC 分发前得到 401。静态资源保持公开。HTTP 载体不在根路径交换之外接受 query token，也不接受 Authorization header token。
+ 
+ cookie 签名密钥是 `ctx.credentials` 中由 `client-connection/browser-session` 拥有的 grant 记录。本地提供方把它持久化到 `$DSH_HOME/.credentials.yaml`；`BrowserAuth` 在 Connection 激活期间加载或创建该记录，并把密钥留在内存中，因此请求认证同步执行。删除或替换该记录会在下一次 Connection 激活时生效。cookie 携带绝对签发与过期区间，`cookieMaxAgeDays` 默认设为 30 天，并在确定性名称与签名 payload 中同时绑定规范化 hostname 和 port。它是 host-only、`Path=/`、`HttpOnly`、`SameSite=Strict`；随附服务器使用 loopback HTTP，因此刻意不设置 `Secure`。
+ 
+@@ -46,6 +46,14 @@ cookie 签名密钥是 `ctx.credentials` 中由 `client-connection/browser-sessi
+ 
+ 通过认证的共享 HTTP 请求在传输请求体之前经过 `connection/request` waterfall。监听器可以拒绝新请求，或等待 `next()` 直到响应完成；释放所属 fiber 会移除准入行为。Desktop 使用此扩展点，在已批准的安装期间锁住新的 API 工作，而不取消已接纳的工作。客户端断开会中止处理函数的信号；桥接器停止写入 socket，并排空剩余响应块。WebSocket 流仍由 API Gateway 负责。
+ 
++
++<a id="trusted-proxy-authentication"></a>
++### 可信代理认证
++
++设置 `trustedProxySecretFile` 会选择与浏览器会话互斥的认证模式。该绝对路径必须指向私有文件，内容为 64 个小写十六进制字符（32 个随机字节），可附带一个末尾换行。Connection 在激活时读取文件；文件缺失或格式错误会导致加载失败。每个 index、API 请求和 WebSocket 升级都必须携带值完全匹配的 `X-Dsh-Proxy-Secret` 头；重复或畸形值均被拒绝。Host、Origin 与 Fetch Metadata 检查仍然有效，也覆盖 index 请求。公告 URL 不含 token，不签发浏览器 cookie，旧 cookie 与启动 token 无法用于认证。
++
++终止 TLS 的认证代理必须授权每条公网路由，删除客户端传入的同名头，并且只在授权后注入自身密钥。后端必须对公网和无关本地账号不可达。共享密钥认证的是代理，而非具体用户：所有获准请求都以 operator 身份执行。密钥不能进入配置转储、命令行、日志或构建产物；轮换后重启 Connection 并重新加载代理。认证在请求或升级开始时检查，不会撤销已建立的流。静态资源仍须由公网代理保护。
++
+ <a id="connection-generation"></a>
+ ## Connection generation
+ 
+diff --git a/packages/client/connection/src/index.ts b/packages/client/connection/src/index.ts
+index 647174f743..39bdaa116a 100644
+--- a/packages/client/connection/src/index.ts
++++ b/packages/client/connection/src/index.ts
+@@ -10,6 +10,7 @@ import { API_PATH } from './api-path.ts'
+ import { bridge, DEFAULT_MAX_REQUEST_BODY_BYTES } from './http-bridge.ts'
+ import { assertTrustedAuthority } from './api-request-trust.ts'
+ import { BrowserAuth } from './browser-auth.ts'
++import { TrustedProxyAuth } from './trusted-proxy-auth.ts'
+ import { HostConnectionService } from './rpc-host.ts'
+ import { ConnectionRecoveryConfigSchema, resolveConnectionConfig, type ConnectionRecoveryConfig } from './recovery-config.ts'
+ 
+@@ -103,6 +104,8 @@ export interface ConnectionConfig {
+   trustedHosts?: string[]
+   /** Absolute browser-session lifetime in days. Default: 30. */
+   cookieMaxAgeDays?: number
++  /** Private 256-bit hex key file; enables exclusive proxy authentication instead of browser cookies. */
++  trustedProxySecretFile?: string
+   /** Maximum buffered JSON body for every `/api` request. Default: 300 MiB. */
+   maxRequestBodyBytes?: number
+ }
+@@ -110,6 +113,7 @@ export interface ConnectionConfig {
+ export const Config: z<ConnectionConfig> = z.object({
+   recovery: ConnectionRecoveryConfigSchema.default({}),
+   trustedHosts: z.array(String).default([]),
++  trustedProxySecretFile: z.string(),
+   cookieMaxAgeDays: z.natural().min(1).default(30),
+   maxRequestBodyBytes: z.natural().min(1).default(DEFAULT_MAX_REQUEST_BODY_BYTES),
+ })
+@@ -134,7 +138,9 @@ export async function apply(ctx: Context, config?: ConnectionConfig): Promise<vo
+   const connection = new HostConnectionService(
+     ctx,
+     trustedHosts,
+-    await BrowserAuth.create(ctx.root, ctx.credentials, cookieMaxAgeDays),
++    config?.trustedProxySecretFile === undefined
++      ? await BrowserAuth.create(ctx.root, ctx.credentials, cookieMaxAgeDays)
++      : await TrustedProxyAuth.create(config.trustedProxySecretFile, trustedHosts),
+   )
+   ctx.inject(['webServer'], (webCtx) => {
+     assertImageBodyCapacity(webCtx, maxRequestBodyBytes)
+diff --git a/packages/client/connection/src/rpc-host.ts b/packages/client/connection/src/rpc-host.ts
+index 0f98bc1f19..2d7a52dc64 100644
+--- a/packages/client/connection/src/rpc-host.ts
++++ b/packages/client/connection/src/rpc-host.ts
+@@ -70,12 +70,12 @@ export class HostConnectionService extends Service implements HostConnectionHand
+    * Provide the Host half over the active HTTP server.
+    * @param ctx - owning Connection plugin context.
+    * @param trustedHosts - deployment authorities accepted by the Host/Origin fence.
+-   * @param browserAuth - process token and persistent browser-session owner.
++   * @param browserAuth - browser-session or exclusive trusted-proxy authentication owner.
+    */
+   constructor(
+     ctx: Context,
+     private readonly trustedHosts: readonly string[],
+-    private readonly browserAuth: BrowserAuth,
++    private readonly browserAuth: Pick<BrowserAuth, 'isAuthenticated' | 'authorizeIndex' | 'authenticatedUrl'>,
+   ) {
+     super(ctx, 'connection')
+     this.operator = new OperatorPeer(ctx)
+diff --git a/packages/client/connection/src/trusted-proxy-auth.ts b/packages/client/connection/src/trusted-proxy-auth.ts
+new file mode 100644
+index 0000000000..98860735d0
+--- /dev/null
++++ b/packages/client/connection/src/trusted-proxy-auth.ts
+@@ -0,0 +1,72 @@
++/** Per-request authentication for deployments with an authenticating reverse proxy. */
++
++import { timingSafeEqual } from 'node:crypto'
++import { readFile } from 'node:fs/promises'
++import { isAbsolute } from 'node:path'
++import { isTrustedApiRequest } from './api-request-trust.ts'
++import type { ConnectionIndexRequest, ConnectionIndexResponse, ConnectionTrustRequest } from './rpc.ts'
++
++const PROXY_HEADER = 'x-dsh-proxy-secret'
++const SECRET_PATTERN = /^[a-f0-9]{64}$/u
++
++/** Exclusive proxy authentication: browser cookies and launch tokens grant no access. */
++export class TrustedProxyAuth {
++  private constructor(
++    private readonly secret: Buffer,
++    private readonly trustedHosts: readonly string[],
++  ) {}
++
++  /**
++   * Read a 256-bit lowercase hex key once at activation; malformed or unreadable files fail load.
++   * @param filename - absolute path to a private file, optionally ending in one newline.
++   * @param trustedHosts - public authorities accepted by the browser-trust fence.
++   * @returns an authentication owner that never mints browser credentials.
++   */
++  static async create(filename: string, trustedHosts: readonly string[]): Promise<TrustedProxyAuth> {
++    if (!isAbsolute(filename)) {
++      throw new Error('client-connection: trustedProxySecretFile must be an absolute path')
++    }
++    const text = (await readFile(filename, 'utf8')).replace(/\r?\n$/u, '')
++    if (text.length !== 64 || !SECRET_PATTERN.test(text)) {
++      throw new Error('client-connection: trustedProxySecretFile must contain exactly 64 lowercase hex characters')
++    }
++    return new TrustedProxyAuth(Buffer.from(text, 'ascii'), trustedHosts)
++  }
++
++  /**
++   * Return a clean application URL without a local authentication token.
++   * @param baseUrl - browser URL whose authority and mount are preserved.
++   * @returns the URL with any token query removed.
++   */
++  authenticatedUrl(baseUrl: string): string {
++    const url = new URL(baseUrl)
++    url.searchParams.delete('token')
++    return url.href
++  }
++
++  /**
++   * Check browser trust and the proxy credential before serving an index.
++   * @param req - incoming index request.
++   * @param res - response owned when this method returns false.
++   * @returns true only for a trusted request carrying the proxy key; never sets cookies.
++   */
++  authorizeIndex(req: ConnectionIndexRequest, res: ConnectionIndexResponse): boolean {
++    const status = !isTrustedApiRequest(req, this.trustedHosts) ? 403 : this.isAuthenticated(req) ? 200 : 401
++    if (status === 200) return true
++    res.writeHead(status, { 'cache-control': 'no-store', 'content-type': 'text/plain; charset=utf-8' })
++    res.end(req.method === 'HEAD' ? undefined : status === 403 ? 'forbidden\n' : 'unauthorized\n')
++    return false
++  }
++
++  /**
++   * Check the private proxy header in constant time after validating its fixed wire length.
++   * @param request - headers supplied by the authenticating proxy; duplicate values are refused.
++   * @returns true only for the configured proxy key, irrespective of cookies or query tokens.
++   */
++  isAuthenticated(request: ConnectionTrustRequest): boolean {
++    const headers = request.headers
++    const value = headers instanceof Headers ? headers.get(PROXY_HEADER) : headers[PROXY_HEADER]
++    if (typeof value !== 'string' || value.length !== 64 || !SECRET_PATTERN.test(value)) return false
++    return timingSafeEqual(Buffer.from(value, 'ascii'), this.secret)
++  }
++}
+diff --git a/packages/client/connection/tests/trusted-proxy-auth.host.spec.ts b/packages/client/connection/tests/trusted-proxy-auth.host.spec.ts
+new file mode 100644
+index 0000000000..87d06e3d84
+--- /dev/null
++++ b/packages/client/connection/tests/trusted-proxy-auth.host.spec.ts
+@@ -0,0 +1,101 @@
++/** Exclusive proxy authentication and the browser-trust checks for index requests. */
++
++import { mkdtemp, rm, writeFile } from 'node:fs/promises'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { afterEach, describe, expect, it } from 'vitest'
++import { TrustedProxyAuth } from '../src/trusted-proxy-auth.ts'
++import type { ConnectionIndexRequest, ConnectionIndexResponse } from '../src/rpc.ts'
++
++const KEY = '0123456789abcdef'.repeat(4)
++const AUTHORITY = 'app.example:9162'
++const roots: string[] = []
++
++afterEach(async () => {
++  await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true })))
++})
++
++async function keyFile(contents = KEY): Promise<string> {
++  const root = await mkdtemp(join(tmpdir(), 'dsh-proxy-auth-'))
++  roots.push(root)
++  const filename = join(root, 'key')
++  await writeFile(filename, contents, { mode: 0o600 })
++  return filename
++}
++
++function response() {
++  const state: { status?: number; headers?: Readonly<Record<string, string>> | undefined; body?: string | undefined } = {}
++  const value: ConnectionIndexResponse = {
++    writeHead(status, headers) {
++      state.status = status
++      state.headers = headers
++    },
++    end(body) { state.body = body },
++  }
++  return { value, state }
++}
++
++function request(headers: Record<string, string | string[]> = {}): ConnectionIndexRequest {
++  return { method: 'GET', url: '/', headers: { host: AUTHORITY, ...headers } }
++}
++
++describe('trusted proxy authentication', () => {
++  it('accepts a private header but never issues browser credentials', async () => {
++    const auth = await TrustedProxyAuth.create(await keyFile(KEY + '\n'), [AUTHORITY])
++    const res = response()
++    expect(auth.authorizeIndex(request({ 'x-dsh-proxy-secret': KEY }), res.value)).toBe(true)
++    expect(res.state).toEqual({})
++    expect(auth.isAuthenticated({ headers: new Headers({ 'X-Dsh-Proxy-Secret': KEY }) })).toBe(true)
++    expect(auth.authenticatedUrl(`https://${AUTHORITY}/dsh/?token=old`)).toBe(`https://${AUTHORITY}/dsh/`)
++  })
++
++  it('rejects missing, wrong, malformed, and duplicate credentials without a cookie fallback', async () => {
++    const auth = await TrustedProxyAuth.create(await keyFile(), [AUTHORITY])
++    for (const value of [undefined, '', 'f'.repeat(64), KEY + '\n', KEY.toUpperCase(), [KEY, KEY], `${KEY}, ${KEY}`]) {
++      const req = { ...request({ cookie: 'dsh-auth-legacy=value', ...(value === undefined ? {} : { 'x-dsh-proxy-secret': value }) }), url: '/?token=legacy' }
++      const res = response()
++      expect(auth.isAuthenticated(req)).toBe(false)
++      expect(auth.authorizeIndex(req, res.value)).toBe(false)
++      expect(res.state).toMatchObject({ status: 401, body: 'unauthorized\n' })
++      expect(res.state.headers?.['set-cookie']).toBeUndefined()
++    }
++    expect(auth.isAuthenticated({ headers: new Headers() })).toBe(false)
++  })
++
++  it('keeps Host, Origin, and Fetch Metadata checks even with the correct proxy key', async () => {
++    const auth = await TrustedProxyAuth.create(await keyFile(), [AUTHORITY])
++    for (const extra of [{ host: 'attacker.example' }, { origin: 'https://attacker.example' },
++      { origin: 'null' }, { 'sec-fetch-site': 'cross-site' }]) {
++      const res = response()
++      expect(auth.authorizeIndex(request({ 'x-dsh-proxy-secret': KEY, ...extra }), res.value)).toBe(false)
++      expect(res.state.status).toBe(403)
++    }
++    const res = response()
++    expect(auth.authorizeIndex(request({ 'x-dsh-proxy-secret': KEY, origin: `https://${AUTHORITY}` }), res.value)).toBe(true)
++    const head = { ...request(), method: 'HEAD' }
++    expect(auth.authorizeIndex(head, res.value)).toBe(false)
++    expect(res.state).toMatchObject({ status: 401, body: undefined })
++  })
++
++  it('fails activation for absent, relative, empty, short, or malformed key files', async () => {
++    await expect(TrustedProxyAuth.create('relative-key', [])).rejects.toThrow('absolute path')
++    const missing = await keyFile()
++    await rm(missing)
++    await expect(TrustedProxyAuth.create(missing, [])).rejects.toThrow()
++    for (const value of ['', 'a'.repeat(63), 'g'.repeat(64), KEY + '\n\n', ' ' + KEY]) {
++      await expect(TrustedProxyAuth.create(await keyFile(value), [])).rejects.toThrow('64 lowercase hex')
++    }
++  })
++
++  it('loads a key once and uses the rotated file only on a new activation', async () => {
++    const filename = await keyFile(KEY + '\r\n')
++    const first = await TrustedProxyAuth.create(filename, [AUTHORITY])
++    const rotated = 'f'.repeat(64)
++    await writeFile(filename, rotated)
++    const second = await TrustedProxyAuth.create(filename, [AUTHORITY])
++    expect(first.isAuthenticated(request({ 'x-dsh-proxy-secret': KEY }))).toBe(true)
++    expect(first.isAuthenticated(request({ 'x-dsh-proxy-secret': rotated }))).toBe(false)
++    expect(second.isAuthenticated(request({ 'x-dsh-proxy-secret': KEY }))).toBe(false)
++    expect(second.isAuthenticated(request({ 'x-dsh-proxy-secret': rotated }))).toBe(true)
++  })
++})
+diff --git a/packages/client/connection/tsconfig.host.json b/packages/client/connection/tsconfig.host.json
+index 66d9844f17..dd02183567 100644
+--- a/packages/client/connection/tsconfig.host.json
++++ b/packages/client/connection/tsconfig.host.json
+@@ -18,7 +18,8 @@
+     "src/recovery-config.ts",
+     "src/rpc-host.ts",
+     "src/rpc-schema.ts",
+-    "src/rpc.ts"
++    "src/rpc.ts",
++    "src/trusted-proxy-auth.ts"
+   ],
+   "references": [
+     {
