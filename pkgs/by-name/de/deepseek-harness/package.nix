@@ -9,6 +9,7 @@
   pnpm_11,
   pnpmBuildHook,
   pnpmConfigHook,
+  python3,
   runCommand,
   testers,
   ...
@@ -27,6 +28,8 @@ stdenv.mkDerivation (finalAttrs: {
     rev = "dsh-v${finalAttrs.version}";
     hash = "sha256-/mScgSeh7/1HdIeWGAnxkzlXTjZsxscpnWkwnhR8hsU=";
   };
+
+  patches = [ ./trusted-proxy-auth.patch ];
 
   # Upstream's client build requires a Git commit stamp matching
   # /^[0-9a-f]{7,40}$/ and otherwise shells out to `git rev-parse HEAD`. The
@@ -110,6 +113,18 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  doCheck = true;
+  checkPhase = ''
+    runHook preCheck
+    pnpm exec vitest run \
+      packages/client/connection/tests/browser-auth.host.spec.ts \
+      packages/client/connection/tests/trusted-proxy-auth.host.spec.ts \
+      packages/client/connection/tests/api-request-trust.host.spec.ts \
+      packages/client/connection/tests/node-half.host.spec.ts \
+      packages/bundle/web-app/tests/startup.spec.ts
+    runHook postCheck
+  '';
+
   doInstallCheck = true;
   installCheckPhase = ''
     export HOME=$TMPDIR
@@ -118,7 +133,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru = {
     updateScript = ./update.sh;
+    # Consumers can fail evaluation instead of deploying an unsupported flag.
+    trustedProxyAuth = true;
     tests = {
+      trusted-proxy-auth =
+        runCommand "deepseek-harness-trusted-proxy-auth"
+          {
+            nativeBuildInputs = [ python3 ];
+          }
+          ''
+            python ${./trusted-proxy-test.py} ${finalAttrs.finalPackage}/bin/dsh
+            touch $out
+          '';
+
       version = testers.testVersion { package = finalAttrs.finalPackage; };
 
       # Boots the web profile and verifies the server actually serves. Guards the
